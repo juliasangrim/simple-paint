@@ -33,7 +33,7 @@ public class InitMainWindow  extends Window {
 
         addMenuButton("Tools/Line...", "Line", KeyEvent.VK_L, "line.png", "onLine");
         addToolBarButton("Tools/Line...");
-        addMenuButton("Tools/Fill...", "Fill", KeyEvent.VK_F, "bucket.png", "onInfo");
+        addMenuButton("Tools/Fill...", "Fill", KeyEvent.VK_F, "bucket.png", "onFill");
         addToolBarButton("Tools/Fill...");
         addMenuButton("Tools/Eraser...", "Eraser", KeyEvent.VK_E, "eraser.png", "onInfo");
         addToolBarButton("Tools/Eraser...");
@@ -54,6 +54,9 @@ public class InitMainWindow  extends Window {
 
     public void onLine() {
         this.panel.setStatus(ToolsStatus.LINE);
+    }
+    public void onFill() {
+        this.panel.setStatus(ToolsStatus.FILL);
     }
 
     public static void main(String[] args)

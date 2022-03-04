@@ -32,7 +32,6 @@ public class Window extends JFrame {
         tools.setRollover(true);
         this.add(tools, BorderLayout.PAGE_START);
 
-        // По умолчанию add() добавляет панель посередине и растягивает
     }
 
     public JMenuItem createMenuButton(String title, String info, int keyId, String iconName, String methodName) throws NoSuchMethodException {
@@ -40,7 +39,7 @@ public class Window extends JFrame {
         item.setToolTipText(info);
         item.setMnemonic(keyId);
         if (iconName != null) {
-            item.setIcon(new ImageIcon(getClass().getResource("/resources/" + iconName), title));
+            item.setIcon(new ImageIcon(getClass().getResource("/" + iconName), title));
         }
         final Method method = getClass().getMethod(methodName);
 

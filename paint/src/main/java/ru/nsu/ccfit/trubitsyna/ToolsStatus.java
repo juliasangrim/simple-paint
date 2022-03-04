@@ -4,5 +4,6 @@ public enum ToolsStatus {
     LINE,
     FILL,
     COLOR,
-    SETTINGS
+    SETTINGS,
+    NOTOOL
 }

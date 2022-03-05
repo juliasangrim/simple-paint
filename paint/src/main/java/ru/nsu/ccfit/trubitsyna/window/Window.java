@@ -1,10 +1,11 @@
 package ru.nsu.ccfit.trubitsyna.window;
 
+import ru.nsu.ccfit.trubitsyna.controller_view.Panel;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
@@ -14,7 +15,8 @@ public class Window extends JFrame {
     private final static int DEFAULT_HEIGHT = 480;
     private JMenuBar menu;
     private JToolBar tools;
-    protected Panel panel;
+    protected ru.nsu.ccfit.trubitsyna.controller_view.Panel panel;
+    private ButtonGroup group;
 
     public Window() {
 
@@ -23,7 +25,7 @@ public class Window extends JFrame {
         setResizable(true);
         setLocationByPlatform(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-
+        group = new ButtonGroup();
         menu = new JMenuBar();
         this.setJMenuBar(menu);
         panel = new Panel();
@@ -108,16 +110,17 @@ public class Window extends JFrame {
         }
         return element;
     }
-    public JButton createToolBarButton(JMenuItem item)
+    public JToggleButton createToolBarButton(JMenuItem item)
     {
-        JButton button = new JButton(item.getIcon());
+        JToggleButton button = new JToggleButton(item.getIcon());
         for(ActionListener listener: item.getActionListeners())
             button.addActionListener(listener);
         button.setToolTipText(item.getToolTipText());
+        button.setFocusPainted(false);
         return button;
     }
 
-    public JButton createToolBarButton(String menuPath)
+    public JToggleButton createToolBarButton(String menuPath)
     {
         JMenuItem item = (JMenuItem)getMenuElement(menuPath);
         if(item == null)
@@ -127,7 +130,13 @@ public class Window extends JFrame {
 
     public void addToolBarButton(String menuPath)
     {
-        tools.add(createToolBarButton(menuPath));
+        var newButton = createToolBarButton(menuPath);
+        tools.add(newButton);
+        if (!menuPath.contains("Palette")) {
+            newButton.addActionListener();
+            group.add(newButton);
+        }
+
     }
 
 

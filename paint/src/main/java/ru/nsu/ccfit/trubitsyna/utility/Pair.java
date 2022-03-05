@@ -1,4 +1,4 @@
-package ru.nsu.ccfit.trubitsyna.tools;
+package ru.nsu.ccfit.trubitsyna.utility;
 
 import lombok.Getter;
 import lombok.Setter;

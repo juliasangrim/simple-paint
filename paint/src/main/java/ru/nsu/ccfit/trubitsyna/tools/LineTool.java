@@ -3,13 +3,16 @@ package ru.nsu.ccfit.trubitsyna.tools;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class LineTool {
-
+public class LineTool implements ITools{
+    private int color = Color.BLACK.getRGB();
     private int thickness = 1;
-    private int[] colorRGB = {0,0,0};
+    private BufferedImage image;
 
+    public LineTool(BufferedImage image) {
+        this.image = image;
+    }
 
-    private void drawHelper(BufferedImage image, int startX, int startY, int endX, int endY, int dx, int dy, boolean isReflection) {
+    private void drawHelper(int startX, int startY, int endX, int endY, int dx, int dy, boolean isReflection) {
         int stepX = endX > startX ? 1 : -1;
         int stepY = endY > startY ? 1 : -1;
         int error = -dx;
@@ -22,25 +25,42 @@ public class LineTool {
                 startY += stepY;
             }
             if (isReflection) {
-                image.setRGB(startY, startX, Color.BLACK.getRGB());
+                image.setRGB(startY, startX, color);
             } else {
-                image.setRGB(startX, startY, Color.BLACK.getRGB());
+                image.setRGB(startX, startY, color);
             }
         }
     }
 
-    public void draw(BufferedImage image, Point start, Point end) {
-        image.setRGB(start.x, start.y, Color.BLACK.getRGB());
-        int dx = Math.abs(end.x - start.x);
-        int dy = Math.abs(end.y - start.y);
-
-
-        if (dy > dx ) {
-            drawHelper(image, start.y, start.x, end.y, end.x, dy, dx,true);
-        } else {
-            drawHelper(image, start.x, start.y, end.x, end.y, dx, dy, false);
+    private void init(int... params) {
+        this.color = params[2];
+        if (params.length > 3) {
+            this.thickness = params[3];
         }
+    }
 
+    @Override
+    public void draw(Point start, int... params) {
+        Point end = new Point(params[0], params[1]);
+        init(params);
+        if (thickness == 1) {
+            image.setRGB(start.x, start.y, color);
+            int dx = Math.abs(end.x - start.x);
+            int dy = Math.abs(end.y - start.y);
+
+
+            if (dy > dx) {
+                drawHelper(start.y, start.x, end.y, end.x, dy, dx, true);
+            } else {
+                drawHelper(start.x, start.y, end.x, end.y, dx, dy, false);
+            }
+
+        } else if (thickness > 1) {
+           var g = (Graphics2D)image.getGraphics();
+           g.setStroke(new BasicStroke(thickness));
+           g.setColor(new Color(color));
+           g.drawLine(start.x, start.y, end.x, end.y);
+        }
     }
 
 

@@ -1,23 +1,27 @@
 package ru.nsu.ccfit.trubitsyna.tools;
 
+import ru.nsu.ccfit.trubitsyna.utility.Pair;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Stack;
 
 
-public class FillTool {
+public class FillTool implements ITools{
 
-    public static final Color color = Color.CYAN;
+    private BufferedImage image;
+    private int color = Color.BLACK.getRGB();
     private final Stack<Pair> spanStack = new Stack<>();
     private int oldColor;
     private int maxDownX = 0;
     private int maxUpX = 0;
 
+    public FillTool(BufferedImage image) {
+        this.image = image;
+    }
 
-    private void addNewSpan(BufferedImage image, Point seed) {
+    private void addNewSpan(Point seed) {
         Point currPointStart = new Point(seed);
-        System.out.println(image.getRGB(currPointStart.x, currPointStart.y));
-        System.out.println(Color.WHITE.getRGB());
         while (currPointStart.x >= 0 && image.getRGB(currPointStart.x, currPointStart.y) == oldColor) {
             currPointStart.x--;
         }
@@ -25,47 +29,51 @@ public class FillTool {
         while (currPointEnd.x < image.getWidth() && image.getRGB(currPointEnd.x, currPointEnd.y) == oldColor) {
             currPointEnd.x++;
         }
-
-
         spanStack.push(new Pair(currPointStart, currPointEnd));
     }
 
-    private void findNewSpans(BufferedImage image, Point seed) {
+    private void findNewSpans(Point seed) {
         if (seed.y - 1 >= 0 && seed.y + 1 < image.getHeight()) {
             if (seed.x > maxUpX) {
                 if (image.getRGB(seed.x, seed.y - 1) == oldColor) {
-                    addNewSpan(image, new Point(seed.x, seed.y - 1));
+                    addNewSpan(new Point(seed.x, seed.y - 1));
                     maxUpX = spanStack.peek().getValue().x;
                 }
             }
             if (seed.x > maxDownX) {
                 if (image.getRGB(seed.x, seed.y + 1) == oldColor) {
-                    addNewSpan(image, new Point(seed.x, seed.y + 1));
+                    addNewSpan(new Point(seed.x, seed.y + 1));
                     maxDownX = spanStack.peek().getValue().x;
                 }
             }
         }
     }
 
-    private void fillAlgo(BufferedImage image) {
+    private void fillAlgo() {
         Pair currSpan = spanStack.pop();
+        var g = (Graphics2D)image.getGraphics();
+        g.setColor(new Color(color));
+        g.drawLine(currSpan.getKey().x + 1, currSpan.getKey().y, currSpan.getValue().x - 1, currSpan.getValue().y);
         for (int x = currSpan.getKey().x + 1; x < currSpan.getValue().x; ++x) {
-            image.setRGB(x, currSpan.getKey().y, color.getRGB());
-            findNewSpans(image, new Point(x, currSpan.getKey().y));
+            findNewSpans(new Point(x, currSpan.getKey().y));
         }
         maxUpX = 0;
         maxDownX = 0;
     }
+    private void init(int... params) {
+        if (params.length > 0) {
+            color = params[0];
+        }
 
-    public void draw(BufferedImage image, Point seed) {
-        oldColor = image.getRGB(seed.x, seed.y);
+    }
 
-        if (oldColor != color.getRGB()) {
-            addNewSpan(image, seed);
-
+    public void draw(Point start, int... params) {
+        init(params);
+        oldColor = image.getRGB(start.x, start.y);
+        if (oldColor != color) {
+            addNewSpan(start);
             while(!spanStack.empty()){
-                fillAlgo(image);
-
+                fillAlgo();
             }
         }
     }

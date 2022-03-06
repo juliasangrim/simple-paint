@@ -41,9 +41,7 @@ public class LineTool implements ITools{
     public void draw(BufferedImage image, Point start, int... params) {
         Point end = new Point(params[0], params[1]);
         init(image, params);
-        System.out.println(thickness);
         if (thickness == 1) {
-            System.out.println("d");
             image.setRGB(start.x, start.y, color);
             int dx = Math.abs(end.x - start.x);
             int dy = Math.abs(end.y - start.y);

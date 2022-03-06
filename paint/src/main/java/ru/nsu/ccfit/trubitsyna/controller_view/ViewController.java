@@ -80,8 +80,6 @@ public class ViewController extends JPanel implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        System.out.println(e.getX());
-        System.out.println(e.getY());
         if (SwingUtilities.isLeftMouseButton(e) && e.getX() < image.getWidth() && e.getY() < image.getHeight()) {
             switch (status) {
                 case LINE:

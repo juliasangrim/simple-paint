@@ -7,7 +7,5 @@ public enum ToolsStatus {
     STAR,
     SETTINGS,
     ERASE,
-    SAVE,
-    OPEN,
     NOTOOL
 }

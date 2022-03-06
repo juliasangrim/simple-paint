@@ -7,15 +7,12 @@ import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
 public class StarStampTool implements ITools{
-    private BufferedImage image;
-    private int bigRadius = 50;
-    private int color = Color.BLACK.getRGB();
-    private int angle = 0;
-    private int countAngle = 5;
+    private final static int SHIFT_ANGLE = -90;
+    private int bigRadius;
+    private int color;
+    private int angle ;
+    private int countAngle;
 
-    public StarStampTool(BufferedImage image) {
-        this.image = image;
-    }
 
     private void init(int... params) {
         color = params[0];
@@ -27,13 +24,12 @@ public class StarStampTool implements ITools{
     }
 
     @Override
-    public void draw(Point start, int... params) {
+    public void draw(BufferedImage image, Point start, int... params) {
         init(params);
-        System.out.println("IM HERE");
         int[] arrayCoordX = new int[countAngle * 2];
         int[] arrayCoordY = new int[countAngle * 2];
         int smallRadius = bigRadius / 2;
-        double shiftAngle = Math.toRadians(-90 + angle);
+        double shiftAngle = Math.toRadians(SHIFT_ANGLE + angle);
         for (int i = 0; i < countAngle * 2; ++i) {
             if (i % 2 == 0) {
                 arrayCoordX[i] = Math.toIntExact(Math.round(start.x + bigRadius * cos(shiftAngle + Math.PI * i / countAngle)));

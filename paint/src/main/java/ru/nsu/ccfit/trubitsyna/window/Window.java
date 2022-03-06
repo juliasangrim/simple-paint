@@ -1,11 +1,13 @@
 package ru.nsu.ccfit.trubitsyna.window;
 
-import ru.nsu.ccfit.trubitsyna.controller_view.Panel;
+import ru.nsu.ccfit.trubitsyna.controller_view.ViewController;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicBorders;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
@@ -13,31 +15,46 @@ import java.security.InvalidParameterException;
 public class Window extends JFrame {
     private final static int DEFAULT_WIDTH = 640;
     private final static int DEFAULT_HEIGHT = 480;
-    private JMenuBar menu;
-    private JToolBar tools;
-    protected ru.nsu.ccfit.trubitsyna.controller_view.Panel panel;
-    private ButtonGroup group;
+    private final static int DEFULT_BUTTON_SIZE = 28;
+    private final static Color DEFAULT_COLOR = Color.BLACK;
+    private final JMenuBar menu;
+    private final JToolBar tools;
+    protected ViewController controller;
+    private final ButtonGroup buttonGroup;
+    protected JScrollPane scrollPane;
+    private JLabel color;
+
 
     public Window() {
 
         super("Paint");
-        setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        setMinimumSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
         setResizable(true);
-        setLocationByPlatform(true);
+        setLocation(0,0);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        group = new ButtonGroup();
+        buttonGroup = new ButtonGroup();
         menu = new JMenuBar();
         this.setJMenuBar(menu);
-        panel = new Panel();
-        this.add(panel);
+        controller = new ViewController();
+        controller.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        scrollPane = new JScrollPane(controller);
+        this.add(scrollPane);
+        scrollPane.setVisible(true);
         tools = new JToolBar("Tools");
+        tools.setFloatable(false);
         tools.setRollover(true);
         this.add(tools, BorderLayout.PAGE_START);
 
     }
 
     public JMenuItem createMenuButton(String title, String info, int keyId, String iconName, String methodName) throws NoSuchMethodException {
-        JMenuItem item = new JMenuItem(title);
+        JMenuItem item;
+        if (!title.contains("Open") && !title.contains("Save") && !title.contains("Palette") && !title.contains("About") && !title.contains("Change window")) {
+            item =new JRadioButtonMenuItem(title);
+        } else {
+            item = new JMenuItem(title);
+        }
+        buttonGroup.add(item);
         item.setToolTipText(info);
         item.setMnemonic(keyId);
         if (iconName != null) {
@@ -45,14 +62,11 @@ public class Window extends JFrame {
         }
         final Method method = getClass().getMethod(methodName);
 
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    method.invoke(Window.this);
-                } catch (InvocationTargetException | IllegalAccessException invocationTargetException) {
-                    invocationTargetException.printStackTrace();
-                }
+        item.addActionListener(e -> {
+            try {
+                method.invoke(Window.this);
+            } catch (InvocationTargetException | IllegalAccessException invocationTargetException) {
+                invocationTargetException.printStackTrace();
             }
         });
         return item;
@@ -110,7 +124,8 @@ public class Window extends JFrame {
         }
         return element;
     }
-    public JToggleButton createToolBarButton(JMenuItem item)
+
+    public JToggleButton createToggleToolBarButton(JMenuItem item)
     {
         JToggleButton button = new JToggleButton(item.getIcon());
         for(ActionListener listener: item.getActionListeners())
@@ -120,7 +135,26 @@ public class Window extends JFrame {
         return button;
     }
 
-    public JToggleButton createToolBarButton(String menuPath)
+    public JToggleButton createToggleToolBarButton(String menuPath)
+    {
+        JMenuItem item = (JMenuItem)getMenuElement(menuPath);
+        if(item == null)
+            throw new InvalidParameterException("Menu path not found: "+menuPath);
+        return createToggleToolBarButton(item);
+    }
+
+
+    public JButton createToolBarButton(JMenuItem item)
+    {
+        JButton button = new JButton(item.getIcon());
+        for(ActionListener listener: item.getActionListeners())
+            button.addActionListener(listener);
+        button.setToolTipText(item.getToolTipText());
+        button.setFocusPainted(false);
+        return button;
+    }
+
+    public JButton createToolBarButton(String menuPath)
     {
         JMenuItem item = (JMenuItem)getMenuElement(menuPath);
         if(item == null)
@@ -128,15 +162,41 @@ public class Window extends JFrame {
         return createToolBarButton(item);
     }
 
+    public JLabel createToolBarColor() {
+        BufferedImage image = new BufferedImage(DEFULT_BUTTON_SIZE, DEFULT_BUTTON_SIZE, BufferedImage.TYPE_INT_RGB);
+        var g = image.getGraphics();
+        g.setColor(DEFAULT_COLOR);
+        g.fillRect(0,0, DEFULT_BUTTON_SIZE, DEFULT_BUTTON_SIZE);
+
+        JLabel color = new JLabel();
+        ImageIcon icon = new ImageIcon(image);
+        color.setIcon(icon);
+        color.setBorder(BasicBorders.getMenuBarBorder());
+        return color;
+    }
+
     public void addToolBarButton(String menuPath)
     {
-        var newButton = createToolBarButton(menuPath);
-        tools.add(newButton);
-        if (!menuPath.contains("Palette")) {
-            newButton.addActionListener();
-            group.add(newButton);
+        if (!menuPath.contains("Open") && !menuPath.contains("Save") && !menuPath.contains("Palette") &&
+                !menuPath.contains("Change window") && !menuPath.contains("About") && !menuPath.contains("Color")) {
+        var newButton = createToggleToolBarButton(menuPath);
+            tools.add(newButton);
+            buttonGroup.add(newButton);
+        } else {
+            if (menuPath.contains("Color")) {
+                color = createToolBarColor();
+                tools.addSeparator(new Dimension(2, 2));
+                tools.add(color);
+            } else {
+                var newButton = createToolBarButton(menuPath);
+                tools.add(newButton);
+                buttonGroup.add(newButton);
+            }
         }
 
+        if (menuPath.contains("Settings") || menuPath.contains("Eraser") || menuPath.contains("Color")) {
+            addToolBarSeparator();
+        }
     }
 
 
@@ -166,6 +226,16 @@ public class Window extends JFrame {
         JMenu menu = new JMenu(title);
         menu.setMnemonic(mnemonic);
         return menu;
+    }
+
+    public void updateColor(Color newColor) {
+        BufferedImage image = new BufferedImage(DEFULT_BUTTON_SIZE, DEFULT_BUTTON_SIZE, BufferedImage.TYPE_INT_RGB);
+        var g = image.getGraphics();
+        g.setColor(newColor);
+        g.fillRect(0,0, DEFULT_BUTTON_SIZE, DEFULT_BUTTON_SIZE);
+        ImageIcon icon = new ImageIcon(image);
+        color.setIcon(icon);
+        color.revalidate();
     }
 
 }

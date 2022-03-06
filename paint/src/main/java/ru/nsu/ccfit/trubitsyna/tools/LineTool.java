@@ -4,13 +4,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class LineTool implements ITools{
-    private int color = Color.BLACK.getRGB();
-    private int thickness = 1;
+    private int color;
+    private int thickness;
     private BufferedImage image;
 
-    public LineTool(BufferedImage image) {
-        this.image = image;
-    }
 
     private void drawHelper(int startX, int startY, int endX, int endY, int dx, int dy, boolean isReflection) {
         int stepX = endX > startX ? 1 : -1;
@@ -32,7 +29,8 @@ public class LineTool implements ITools{
         }
     }
 
-    private void init(int... params) {
+    private void init(BufferedImage image, int... params) {
+        this.image = image;
         this.color = params[2];
         if (params.length > 3) {
             this.thickness = params[3];
@@ -40,10 +38,12 @@ public class LineTool implements ITools{
     }
 
     @Override
-    public void draw(Point start, int... params) {
+    public void draw(BufferedImage image, Point start, int... params) {
         Point end = new Point(params[0], params[1]);
-        init(params);
+        init(image, params);
+        System.out.println(thickness);
         if (thickness == 1) {
+            System.out.println("d");
             image.setRGB(start.x, start.y, color);
             int dx = Math.abs(end.x - start.x);
             int dy = Math.abs(end.y - start.y);

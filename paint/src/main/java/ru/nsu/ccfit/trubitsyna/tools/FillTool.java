@@ -16,9 +16,7 @@ public class FillTool implements ITools{
     private int maxDownX = 0;
     private int maxUpX = 0;
 
-    public FillTool(BufferedImage image) {
-        this.image = image;
-    }
+
 
     private void addNewSpan(Point seed) {
         Point currPointStart = new Point(seed);
@@ -60,15 +58,16 @@ public class FillTool implements ITools{
         maxUpX = 0;
         maxDownX = 0;
     }
-    private void init(int... params) {
+    private void init(BufferedImage image, int... params) {
+        this.image = image;
         if (params.length > 0) {
             color = params[0];
         }
 
     }
 
-    public void draw(Point start, int... params) {
-        init(params);
+    public void draw(BufferedImage image, Point start, int... params) {
+        init(image, params);
         oldColor = image.getRGB(start.x, start.y);
         if (oldColor != color) {
             addNewSpan(start);

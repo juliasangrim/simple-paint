@@ -11,6 +11,9 @@ import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidParameterException;
+import java.security.Security;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 public class Window extends JFrame {
     private final static int DEFAULT_WIDTH = 640;
@@ -20,7 +23,8 @@ public class Window extends JFrame {
     private final JMenuBar menu;
     private final JToolBar tools;
     protected ViewController controller;
-    private final ButtonGroup buttonGroup;
+    protected final ButtonGroup buttonGroup;
+    protected final ButtonGroup menuButtonGroup;
     protected JScrollPane scrollPane;
     private JLabel color;
 
@@ -33,6 +37,7 @@ public class Window extends JFrame {
         setLocation(0,0);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         buttonGroup = new ButtonGroup();
+        menuButtonGroup = new ButtonGroup();
         menu = new JMenuBar();
         this.setJMenuBar(menu);
         controller = new ViewController();
@@ -54,17 +59,18 @@ public class Window extends JFrame {
         } else {
             item = new JMenuItem(title);
         }
-        buttonGroup.add(item);
+        item.setActionCommand(title);
+        menuButtonGroup.add(item);
         item.setToolTipText(info);
         item.setMnemonic(keyId);
         if (iconName != null) {
             item.setIcon(new ImageIcon(getClass().getResource("/" + iconName), title));
         }
-        final Method method = getClass().getMethod(methodName);
+        final Method method = getClass().getMethod(methodName, ActionEvent.class);
 
         item.addActionListener(e -> {
             try {
-                method.invoke(Window.this);
+                method.invoke(Window.this, e);
             } catch (InvocationTargetException | IllegalAccessException invocationTargetException) {
                 invocationTargetException.printStackTrace();
             }
@@ -130,6 +136,8 @@ public class Window extends JFrame {
         JToggleButton button = new JToggleButton(item.getIcon());
         for(ActionListener listener: item.getActionListeners())
             button.addActionListener(listener);
+
+        button.setActionCommand(item.getText());
         button.setToolTipText(item.getToolTipText());
         button.setFocusPainted(false);
         return button;
@@ -150,6 +158,7 @@ public class Window extends JFrame {
         for(ActionListener listener: item.getActionListeners())
             button.addActionListener(listener);
         button.setToolTipText(item.getToolTipText());
+        button.setActionCommand(item.getText());
         button.setFocusPainted(false);
         return button;
     }

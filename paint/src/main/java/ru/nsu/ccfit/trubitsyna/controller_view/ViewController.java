@@ -125,6 +125,7 @@ public class ViewController extends JPanel implements MouseListener {
         image = ImageIO.read(file);
         width = image.getWidth();
         height = image.getHeight();
+        setPreferredSize(new Dimension(width, height));
         repaint();
     }
 

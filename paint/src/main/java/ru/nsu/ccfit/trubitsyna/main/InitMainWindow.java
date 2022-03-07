@@ -9,9 +9,12 @@ import ru.nsu.ccfit.trubitsyna.window.Window;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Objects;
 
 public class InitMainWindow extends Window {
 
@@ -33,7 +36,6 @@ public class InitMainWindow extends Window {
 
     private void createButtons() throws NoSuchMethodException {
         addSubMenu("File", KeyEvent.VK_F);
-        addSubMenu("Tools", KeyEvent.VK_T);
 
         addMenuButton("File/Open...", "Open image", KeyEvent.VK_O, "open.png", "onOpen");
         addToolBarButton("File/Open...");
@@ -43,20 +45,21 @@ public class InitMainWindow extends Window {
         addToolBarButton("File/Change window...");
 
 
+        addSubMenu("Tools", KeyEvent.VK_T);
         addMenuButton("Tools/Line...", "Draw line", KeyEvent.VK_L, "line.png", "onLine");
         addToolBarButton("Tools/Line...");
         addMenuButton("Tools/Fill...", "Fill area", KeyEvent.VK_F, "bucket.png", "onFill");
         addToolBarButton("Tools/Fill...");
-        addSubMenu("Tools/Stamps", KeyEvent.VK_T);
-        addMenuButton("Tools/Stamps/Polygon Stamp...", "Draw polygon", KeyEvent.VK_P, "polygon.png", "onPolygon");
-        addToolBarButton("Tools/Stamps/Polygon Stamp...");
-        addMenuButton("Tools/Stamps/Star Stamp...", "Draw star", KeyEvent.VK_P, "star.png", "onStar");
-        addToolBarButton("Tools/Stamps/Star Stamp...");
+        addMenuButton("Tools/Polygon Stamp...", "Draw polygon", KeyEvent.VK_P, "polygon.png", "onPolygon");
+        addToolBarButton("Tools/Polygon Stamp...");
+        addMenuButton("Tools/Star Stamp...", "Draw star", KeyEvent.VK_P, "star.png", "onStar");
+        addToolBarButton("Tools/Star Stamp...");
         addMenuButton("Tools/Eraser...", "Erase area", KeyEvent.VK_E, "eraser.png", "onEraser");
         addToolBarButton("Tools/Eraser...");
 
         addMenuButton("Tools/Palette...", "Choose color for tools", KeyEvent.VK_C, "paint.png", "onColor");
         addToolBarButton("Tools/Palette...");
+
         addToolBarButton("Color");
 
         addSubMenu("Help", KeyEvent.VK_H);
@@ -64,7 +67,7 @@ public class InitMainWindow extends Window {
         addToolBarButton("Help/About...");
     }
 
-    public void onInfo()
+    public void onInfo(ActionEvent e)
     {
         JOptionPane.showMessageDialog(this, "Paint, version 1.0\n Hello! This is simple paint!\n" +
                 "The list of instrument presented below: \n " +
@@ -76,67 +79,96 @@ public class InitMainWindow extends Window {
 
     }
 
-    public void onLine() {
-        this.controller.setStatus(ToolsStatus.LINE);
+    private void selectButton(AbstractButton selectButton) {
+
+        if (menuButtonGroup.isSelected(selectButton.getModel())) {
+            for (Enumeration<AbstractButton> buttons = buttonGroup.getElements(); buttons.hasMoreElements();) {
+                AbstractButton button = buttons.nextElement();
+                if (button.getActionCommand().equals(selectButton.getActionCommand())) {
+                    buttonGroup.setSelected(button.getModel(), true);
+                }
+            }
+        } else {
+            for (Enumeration<AbstractButton> buttons = menuButtonGroup.getElements(); buttons.hasMoreElements();) {
+                AbstractButton button = buttons.nextElement();
+                if (button.getActionCommand().equals(selectButton.getActionCommand())) {
+                    menuButtonGroup.setSelected(button.getModel(), true);
+                }
+            }
+        }
+    }
+
+    public void onLine(ActionEvent e) {
+        controller.setStatus(ToolsStatus.LINE);
+
+        selectButton((AbstractButton)e.getSource());
 
         var clickedValue = JOptionPane.showOptionDialog(this, lineDialog, "Change thickness",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         if (clickedValue == JOptionPane.OK_OPTION) {
-            this.controller.setParams(lineDialog.getThickness());
+            controller.setParams(lineDialog.getThickness());
         }
+    }
+
+
+    public void onFill(ActionEvent e) {
+        controller.setStatus(ToolsStatus.FILL);
+        selectButton((AbstractButton)e.getSource());
 
     }
-    public void onFill() {
-        this.controller.setStatus(ToolsStatus.FILL);
-
+    public void onEraser(ActionEvent e) {
+        controller.setStatus(ToolsStatus.ERASE);
+        selectButton((AbstractButton)e.getSource());
     }
-    public void onEraser() {
-        this.controller.setStatus(ToolsStatus.ERASE);}
 
-    public void onPolygon() {
-        this.controller.setStatus(ToolsStatus.POLYGON);
+
+    public void onPolygon(ActionEvent e) {
+        controller.setStatus(ToolsStatus.POLYGON);
+        selectButton((AbstractButton)e.getSource());
 
         var clickedValue = JOptionPane.showOptionDialog(this, stampPolygonDialog, "Change parameters",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         if (clickedValue == JOptionPane.OK_OPTION) {
-            this.controller.setParams(stampPolygonDialog.countCoord, stampPolygonDialog.radius, stampPolygonDialog.angle);
+            controller.setParams(stampPolygonDialog.countCoord, stampPolygonDialog.radius, stampPolygonDialog.angle);
         }
     }
-    public void onStar() {
-        this.controller.setStatus(ToolsStatus.STAR);
+    public void onStar(ActionEvent e) {
+        controller.setStatus(ToolsStatus.STAR);
+        selectButton((AbstractButton)e.getSource());
 
         var clickedValue = JOptionPane.showOptionDialog(this, stampStarDialog, "Change parameters",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         if (clickedValue == JOptionPane.OK_OPTION) {
-            this.controller.setParams(stampStarDialog.countCoord, stampStarDialog.radius, stampStarDialog.angle);
+            controller.setParams(stampStarDialog.countCoord, stampStarDialog.radius, stampStarDialog.angle);
         }
     }
-    public void onColor() {
+    public void onColor(ActionEvent e) {
         var color = JColorChooser.showDialog(this, "Palette", Color.BLACK);
         updateColor(color);
         if (color != null) {
             controller.setColor(color.getRGB());
         }
     }
-    public void onChangeSize() {
+    public void onChangeSize(ActionEvent e) {
         var clickedValue = JOptionPane.showOptionDialog(this, sizeWindowDialog, "Change window size",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
 
         if (clickedValue == JOptionPane.OK_OPTION) {
-            this.controller.changeSizeImage(sizeWindowDialog.width, sizeWindowDialog.height);
+            controller.changeSizeImage(sizeWindowDialog.width, sizeWindowDialog.height);
+            scrollPane.revalidate();
         }
-        this.pack();
     }
-    public void onOpen() {
+    public void onOpen(ActionEvent event) {
         FileDialog fd = new FileDialog (this, "Open image", FileDialog.LOAD);
         fd.setVisible(true);
         try {
             if (fd.getFile() != null) {
             if (fd.getFile().endsWith(".bmp") || fd.getFile().endsWith(".jpg") || fd.getFile().endsWith(".gif") || fd.getFile().endsWith(".png")) {
                 controller.openFile(new File(fd.getDirectory() + fd.getFile()));
+                scrollPane.revalidate();
             } else {
                 JOptionPane.showMessageDialog(this, "Application can't open file with such exception.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -145,7 +177,7 @@ public class InitMainWindow extends Window {
             e.printStackTrace();
         }
     }
-    public void onSave() {
+    public void onSave(ActionEvent event) {
         FileDialog fd = new FileDialog (this, "Save image", FileDialog.SAVE);
         fd.setFile("Untitled");
         fd.setVisible(true);
@@ -156,7 +188,6 @@ public class InitMainWindow extends Window {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        System.out.println(fd.getFile());
     }
 
 
